@@ -13,15 +13,15 @@ app.use('/static', express.static(path.join(__dirname, 'static')))
 //app.set('views', path.join(__dirname, 'views'))
 
 
-app.get("/index", (req, res) => {
-    res.render('index', {layout:"public_layout"})
+app.get("/", (req, res) => {
+    res.redirect("/login")
 });
 
 
 
 // Route for the login page
 app.get("/login", (req, res) => {
-    res.render('login' , {layout:"public_layout"})
+    res.render('login' , {layout:undefined})
 });
 
 // Wildcard route for undefined routes (404)
