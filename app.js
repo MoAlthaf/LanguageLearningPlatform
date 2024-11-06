@@ -18,6 +18,9 @@ app.get("/", (req, res) => {
 });
 
 
+app.get("/register" , (req,res)=>{
+    res.render("register" , {layout:undefined})
+})
 
 // Route for the login page
 app.get("/login", (req, res) => {

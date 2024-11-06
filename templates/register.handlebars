@@ -1,20 +1,12 @@
-<!DOCTYPE html><!--
-* CoreUI - Free Bootstrap Admin Template
-* @version v4.2.2
-* @link https://coreui.io/product/free-bootstrap-admin-template/
-* Copyright (c) 2023 creativeLabs Łukasz Holeczek
-* Licensed under MIT (https://github.com/coreui/coreui-free-bootstrap-admin-template/blob/main/LICENSE)
--->
+<!DOCTYPE html>
 <html lang="en">
-  <head>
+<head>
     <base href="/static/./">
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no">
     <meta name="description" content="CoreUI - Open Source Bootstrap Admin Template">
-    <meta name="author" content="Łukasz Holeczek">
-    <meta name="keyword" content="Bootstrap,Admin,Template,Open,Source,jQuery,CSS,HTML,RWD,Dashboard">
-    <title>CoreUI Free Bootstrap Admin Template</title>
+    <title>Register - Language Exchange</title>
     <link rel="apple-touch-icon" sizes="57x57" href="/static/assets/favicon/apple-icon-57x57.png">
     <link rel="apple-touch-icon" sizes="60x60" href="/static/assets/favicon/apple-icon-60x60.png">
     <link rel="apple-touch-icon" sizes="72x72" href="/static/assets/favicon/apple-icon-72x72.png">
@@ -30,7 +22,7 @@
     <link rel="icon" type="image/png" sizes="16x16" href="/static/assets/favicon/favicon-16x16.png">
     <link rel="manifest" href="/static/assets/favicon/manifest.json">
     <meta name="msapplication-TileColor" content="#ffffff">
-    <meta name="msapplication-TileImage" content="assets/favicon/ms-icon-144x144.png">
+    <meta name="msapplication-TileImage" content="/static/assets/favicon/ms-icon-144x144.png">
     <meta name="theme-color" content="#ffffff">
     <!-- Vendors styles-->
     <link rel="stylesheet" href="/static/vendors/simplebar/css/simplebar.css">
@@ -39,53 +31,93 @@
     <link href="/static/css/style.css" rel="stylesheet">
     <!-- We use those styles to show code examples, you should remove them in your application.-->
     <link href="/static/css/examples.css" rel="stylesheet">
-  </head>
-  <body>
+</head>
+<body>
     <div class="bg-light min-vh-100 d-flex flex-row align-items-center">
-      <div class="container">
-        <div class="row justify-content-center">
-          <div class="col-md-6">
-            <div class="card mb-4 mx-4">
-              <div class="card-body p-4">
-                <h1>Register</h1>
-                <p class="text-medium-emphasis">Create your account</p>
-                <div class="input-group mb-3"><span class="input-group-text">
-                    <svg class="icon">
-                      <use xlink:href="/static/vendors/@coreui/icons/svg/free.svg#cil-user"></use>
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-md-6">
+                    <div class="card mb-4 mx-4">
+                        <div class="card-body p-4">
+                            <h1>Register</h1>
+                            <p class="text-medium-emphasis">Create your account</p>
+                            <form action="/register" method="POST" enctype="multipart/form-data">
+                                
+                                <!-- Username -->
+                                <div class="input-group mb-3">
+                                    <span class="input-group-text">
+                                        <svg class="icon">
+                                            <use xlink:href="/static/vendors/@coreui/icons/svg/free.svg#cil-user"></use>
+                                        </svg>
+                                    </span>
+                                    <input class="form-control" type="text" name="username" placeholder="Username" required>
+                                </div>
 
-                    </svg></span>
-                  <input class="form-control" type="text" placeholder="Username">
+                                <!-- Email -->
+                                <div class="input-group mb-3">
+                                    <span class="input-group-text">
+                                        <svg class="icon">
+                                            <use xlink:href="/static/vendors/@coreui/icons/svg/free.svg#cil-envelope-open"></use>
+                                        </svg>
+                                    </span>
+                                    <input class="form-control" type="email" name="email" placeholder="Email" required>
+                                </div>
+
+                                <!-- Password -->
+                                <div class="input-group mb-3">
+                                    <span class="input-group-text">
+                                        <svg class="icon">
+                                            <use xlink:href="/static/vendors/@coreui/icons/svg/free.svg#cil-lock-locked"></use>
+                                        </svg>
+                                    </span>
+                                    <input class="form-control" type="password" name="password" placeholder="Password" required>
+                                </div>
+
+                                <!-- Repeat Password -->
+                                <div class="input-group mb-4">
+                                    <span class="input-group-text">
+                                        <svg class="icon">
+                                            <use xlink:href="/static/vendors/@coreui/icons/svg/free.svg#cil-lock-locked"></use>
+                                        </svg>
+                                    </span>
+                                    <input class="form-control" type="password" name="confirm_password" placeholder="Repeat password" required>
+                                </div>
+
+                                <!-- Profile Photo -->
+                                <div class="mb-3">
+                                    <label class="form-label" for="profilePhoto">Profile Photo</label>
+                                    <input class="form-control" type="file" name="profilePhoto" id="profilePhoto" accept="image/*">
+                                </div>
+
+                                <!-- Languages Fluent In -->
+                                <div class="mb-3">
+                                    <label class="form-label" for="languagesFluent">Languages Fluent In</label>
+                                    <input class="form-control" type="text" name="languagesFluent" id="languagesFluent" placeholder="e.g., English, Spanish">
+                                </div>
+
+                                <!-- Languages to Learn -->
+                                <div class="mb-3">
+                                    <label class="form-label" for="languagesLearning">Languages to Learn</label>
+                                    <input class="form-control" type="text" name="languagesLearning" id="languagesLearning" placeholder="e.g., French, Japanese">
+                                </div>
+
+                                <!-- Submit Button -->
+                                <button class="btn btn-block btn-success" type="submit">Create Account</button>
+                            </form>
+
+                            <!-- Email Verification Notice -->
+                            <div class="mt-2">
+                                <small class="text-muted">Please check your email for a verification link after registration.</small>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                <div class="input-group mb-3"><span class="input-group-text">
-                    <svg class="icon">
-                      <use xlink:href="/static/vendors/@coreui/icons/svg/free.svg#cil-envelope-open"></use>
-                    </svg></span>
-                  <input class="form-control" type="text" placeholder="Email">
-                </div>
-                <div class="input-group mb-3"><span class="input-group-text">
-                    <svg class="icon">
-                      <use xlink:href="/static/vendors/@coreui/icons/svg/free.svg#cil-lock-locked"></use>
-                    </svg></span>
-                  <input class="form-control" type="password" placeholder="Password">
-                </div>
-                <div class="input-group mb-4"><span class="input-group-text">
-                    <svg class="icon">
-                      <use xlink:href="/static/vendors/@coreui/icons/svg/free.svg#cil-lock-locked"></use>
-                    </svg></span>
-                  <input class="form-control" type="password" placeholder="Repeat password">
-                </div>
-                <button class="btn btn-block btn-success" type="button">Create Account</button>
-              </div>
             </div>
-          </div>
         </div>
-      </div>
     </div>
     <!-- CoreUI and necessary plugins-->
-    <script src="vendors/@coreui/coreui/js/coreui.bundle.min.js"></script>
-    <script src="vendors/simplebar/js/simplebar.min.js"></script>
-    <script>
-    </script>
-
-  </body>
+    <script src="/static/vendors/@coreui/coreui/js/coreui.bundle.min.js"></script>
+    <script src="/static/vendors/simplebar/js/simplebar.min.js"></script>
+</body>
 </html>
+
