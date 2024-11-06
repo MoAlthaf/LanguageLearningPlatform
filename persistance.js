@@ -4,18 +4,21 @@ const mongodb=requre("mongodb")
 let client = new mongodb.MongoClient("mongodb+srv://60300344:60300344@web2practice.kgejg.mongodb.net/");
 let client_status = false;
 let db=undefined
+let userCollections=undefined
+
 // Function to connect to the database
 async function connectDB() {
     if (!client_status) {
         await client.connect();
         client_status = true;
         db=client.db("Project")
+        userCollections=db.collection("user_collections")
     }
 }
 
+//Function to create a user,
 async function createUser(data){
     await connectDB()
-    let userCollections=db.collection("user_collections")
     try{
         await userCollections.add(data)
         return true
