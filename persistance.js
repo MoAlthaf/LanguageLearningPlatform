@@ -29,6 +29,8 @@ async function getUserByUsername(username) {
     return await userCollections.findOne({ username });
 }
 
+
+
 module.exports={
     createUser,getUserByUsername
 }
