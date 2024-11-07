@@ -36,11 +36,11 @@ app.get("/login", (req, res) => {
     res.render('login', { layout: undefined });
 });
 
-app.post("/login",(req,res)=>{
+app.post("/login",async (req,res)=>{
     let username=req.body.username
     let password=req.body.password
 
-    let userData=business.getUserData(username)
+    let userData=await business.getUserData(username)
     if (userData && userData.password==password){
         res.send(`Welcome user ${username}`)
     }else{

@@ -7,7 +7,7 @@ async function addUser(data){
 
 
 async function getUserData(username){
-    await persistance.getUserByUsername(username)
+    return await persistance.getUserByUsername(username)
 }
 
 module.exports={

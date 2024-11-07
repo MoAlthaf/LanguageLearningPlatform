@@ -29,7 +29,8 @@ async function createUser(data){
 }
 
 async function getUserByUsername(username) {
-    return await userCollections.findOne({ username });
+    await connectDB()
+    return await userCollections.findOne({ username:username });
 }
 
 
