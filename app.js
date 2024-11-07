@@ -1,60 +1,95 @@
 const express = require('express');
-const business=require("./business")
+const business = require('./business');
 const path = require('path');
-const app = express();
+const bodyParser = require('body-parser');
+const multer = require('multer') //to handle images in form
 const handlebars = require('express-handlebars');
+const app = express();
+
+// Set up Handlebars as the template engine
 app.set('views', __dirname + "/templates");
 app.set('view engine', 'handlebars');
 app.engine('handlebars', handlebars.engine());
 
-
-app.use('/static', express.static(path.join(__dirname, 'static')))
+// Set up static file serving
+app.use('/static', express.static(path.join(__dirname, 'static')));
 app.use(bodyParser.urlencoded({ extended: true }));
 
-//app.set('views', path.join(__dirname, 'views'))
-
-
-app.get("/", (req, res) => {
-    res.redirect("/login")
+// Configure multer for handling file uploads
+const storage = multer.diskStorage({
+    destination: './uploads/profiles', // Directory to save profile photos
+    filename: (req, file, cb) => {
+        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+        cb(null, file.fieldname + '-' + uniqueSuffix + path.extname(file.originalname));
+    }
 });
 
+const upload = multer({ storage: storage });
 
-app.get("/register" , (req,res)=>{
-    res.render("register" , {layout:undefined})
-})
+// Redirect to login page as default route
+app.get("/", (req, res) => {
+    res.redirect("/login");
+});
 
 // Route for the login page
 app.get("/login", (req, res) => {
-    res.render('login' , {layout:undefined})
+    res.render('login', { layout: undefined });
+});
+
+// Route for the register page
+app.get("/register", (req, res) => {
+    res.render("register", { layout: undefined });
+});
+
+// Handle the registration form submission with file upload
+app.post("/register", upload.single('profilePhoto'), async (req, res) => {
+    try {
+        // Extract fields from req.body
+        const username = req.body.username;
+        const email = req.body.email;
+        const password = req.body.password;
+        const profilePhoto = req.file ? req.file.path : null; // Get the file path of the uploaded profile photo
+        const languagesFluent = req.body.languagesFluent ? req.body.languagesFluent.split(",") : [];
+        const languagesLearning = req.body.languagesLearning ? req.body.languagesLearning.split(",") : [];
+        const verified=false;
+        const badges=null;
+        const createdAt = new Date(Date.now());
+        const updatedAt=new Date(Date.now());
+
+        
+    
+
+        // Create user data object
+        const userData = {
+            username: username,
+            email: email,
+            password: password, // will do hashing later
+            profilePhoto: profilePhoto, //  file path for the profile photo
+            languagesFluent: languagesFluent,
+            languagesLearning: languagesLearning,
+            verified:verified,
+            badges:badges,
+            createdAt: createdAt,
+            updatedAt:updatedAt
+
+        };
+
+        
+        await business.addUser(userData);
+
+        // Respond to client
+        res.send("User registered successfully");
+    } catch (error) {
+        res.status(500).send("Error registering user");
+    }
 });
 
 // Wildcard route for undefined routes (404)
 app.get("*", (req, res) => {
-    res.status(404).sendFile(path.join(__dirname, "views", "404.html"))
+    res.status(404).sendFile(path.join(__dirname, "views", "404.html"));
 });
-
-app.post("/regiter",async (req,res)=>{
-    let username= req.body.username
-    let email=req.body.email
-    let password=req.body.password
-    //let profilePhoto=req.body.profile.photo
-    let languagesFluent=req.body.languagesFluent.split(",")
-    let languagesLearning=req.body.languagesLearning.split(",")
-    let createdAt= new Date(Date.now())
-    //let profilePhoto=req.body.profile.photo
-    let userData={
-         username: req.body.username,
-        email:req.body.email,
-         password:req.body.password,
-         languagesFluent:req.body.languagesFluent.split(","),
-         languagesLearning:req.body.languagesLearning.split(","),
-         createdAt: new Date(Date.now())
-    }
-    await business.addUser(userData)
-})
 
 // Start the server
 app.listen(8000, () => {
-    console.log(`App running on port 8000`)
+    console.log(`App running on port 8000`);
 });
-

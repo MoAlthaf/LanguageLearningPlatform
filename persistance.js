@@ -1,4 +1,4 @@
-const mongodb=requre("mongodb")
+const mongodb=require("mongodb")
 
 
 let client = new mongodb.MongoClient("mongodb+srv://60300344:60300344@web2practice.kgejg.mongodb.net/");
@@ -12,7 +12,7 @@ async function connectDB() {
         await client.connect();
         client_status = true;
         db=client.db("Project")
-        userCollections=db.collection("user_collections")
+        userCollections=db.collection("users")
     }
 }
 
@@ -20,7 +20,7 @@ async function connectDB() {
 async function createUser(data){
     await connectDB()
     try{
-        await userCollections.add(data)
+        await userCollections.insertOne(data)
         return true
     }catch{
         return false
