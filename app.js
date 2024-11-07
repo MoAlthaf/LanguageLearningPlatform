@@ -97,6 +97,12 @@ app.post("/register", upload.single('profilePhoto'), async (req, res) => {
     }
 });
 
+
+app.get("/index",async (req,res)=>{
+    let user=await business.getUserData("Jhoan")
+    res.render("index",{layout:"public_layout",user})
+})
+
 // Wildcard route for undefined routes (404)
 app.get("*", (req, res) => {
     res.status(404).sendFile(path.join(__dirname, "views", "404.html"));
