@@ -36,10 +36,23 @@ app.get("/login", (req, res) => {
     res.render('login', { layout: undefined });
 });
 
+app.post("/login",(req,res)=>{
+    let username=req.body.username
+    let password=req.body.password
+
+    let userData=business.getUserData(username)
+    if (userData && userData.password==password){
+        res.send(`Welcome user ${username}`)
+    }else{
+        res.send("Invalid user")
+    }
+})
+
 // Route for the register page
 app.get("/register", (req, res) => {
     res.render("register", { layout: undefined });
 });
+
 
 // Handle the registration form submission with file upload
 app.post("/register", upload.single('profilePhoto'), async (req, res) => {
