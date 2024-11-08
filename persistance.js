@@ -5,6 +5,7 @@ let client = new mongodb.MongoClient("mongodb+srv://60300344:60300344@web2practi
 let client_status = false;
 let db=undefined
 let userCollections=undefined
+let sessionData=undefined
 
 // Function to connect to the database
 async function connectDB() {
@@ -13,6 +14,7 @@ async function connectDB() {
         client_status = true;
         db=client.db("Project")
         userCollections=db.collection("users")
+        sessionData=db.collection("sessionData")
     }
 }
 
@@ -35,6 +37,19 @@ async function getUserByUsername(username) {
 
 
 
+async function startSession(session){
+    await connectDB()
+    await sessionData.insertOne(session)
+
+}
+
+async function getSessionKey(key){
+    await connectDB()
+    return await sessionData.findOne({sessionNumber:key})
+}
+
+
+
 module.exports={
-    createUser,getUserByUsername
+    createUser,getUserByUsername,startSession,getSessionKey
 }
