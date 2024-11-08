@@ -5,6 +5,7 @@ const multer = require('multer');
 const handlebars = require('express-handlebars');
 const cookieParser = require("cookie-parser");
 const business = require('./business');
+const crypto=require("crypto")
 const app = express();
 
 // Set up Handlebars as the template engine
@@ -51,31 +52,56 @@ app.route("/login")
         res.send("Incorrect Username and password");
     });
 
-// Register Routes
-app.route("/register")
-    .get((req, res) => res.render("register", { layout: undefined }))
-    .post(upload.single('profilePhoto'), async (req, res) => {
-        try {
-            const { username, email, password, languagesFluent, languagesLearning } = req.body;
-            const userData = {
-                username,
-                email,
-                password, // Hash later for security
-                profilePhoto: req.file ? req.file.path.replace(/\\/g, "/") : null,
-                languagesFluent: languagesFluent ? languagesFluent.split(",") : [],
-                languagesLearning: languagesLearning ? languagesLearning.split(",") : [],
-                verified: false,
-                badges: null,
-                createdAt: new Date(),
-                updatedAt: new Date()
-            };
+    // Route for the register page
+app.get("/register", (req, res) => {
+    res.render("register", { layout: undefined });
+});
 
-            await business.addUser(userData);
-            res.send("User registered successfully");
-        } catch (error) {
-            res.status(500).send("Error registering user");
-        }
-    });
+// Handle the registration form submission with file upload
+app.post("/register", upload.single('profilePhoto'), async (req, res) => {
+    try {
+        // Extract fields from req.body
+        const username = req.body.username;
+        const email = req.body.email;
+        const password = req.body.password;
+        const profilePhoto = req.file ? req.file.path : null; // Get the file path of the uploaded profile photo
+        const languagesFluent = req.body.languagesFluent ? req.body.languagesFluent.split(",") : [];
+        const languagesLearning = req.body.languagesLearning ? req.body.languagesLearning.split(",") : [];
+        const createdAt = new Date(Date.now());
+        const updatedAt = new Date(Date.now());
+
+        // Generate a verification token
+        
+        const verificationToken = crypto.randomBytes(32).toString('hex');
+        // Create user data object
+        const userData = {
+            username: username,
+            email: email,
+            password: password, // TODO: Hash the password before saving
+            profilePhoto: profilePhoto,
+            languagesFluent: languagesFluent,
+            languagesLearning: languagesLearning,
+            verified: false,
+            badges: [],
+            verificationToken: verificationToken, // Store the token
+            createdAt: createdAt,
+            updatedAt: updatedAt
+        };
+
+        // Add user to the database
+        await business.addUser(userData);
+        
+        // Log the verification link to the console (simulate sending an email)
+        const verificationLink = `http://localhost:8000/verify-email?token=${verificationToken}`;
+        console.log(`Verification link: ${verificationLink}`);
+
+        // Respond to client
+        res.send("User registered successfully. Please check the console for the verification link.");
+    } catch (error) {
+        console.error(error);
+        res.status(500).send("Error registering user");
+    }
+});
 
 // Index Route
 app.get("/index", async (req, res) => {
@@ -103,6 +129,29 @@ app.get("/profile", async (req, res) => {
         profilePhotoPath: `/${user.profilePhoto}`
     });
 });
+
+app.get('/verify-email', async (req, res) => {
+    try {
+        const { token } = req.query;
+
+        const user = await business.getTokenData(token)  
+        if (!user) {
+            return res.status(400).send('Invalid or expired token.');
+        }
+
+        // Verify the user by updating their status and clearing the token
+        user.verified = true;
+        user.verificationToken = null; // Clear the token after verification
+        await business.updateUser(user.username, user)
+
+        res.send('Email verified successfully!');
+    } catch (error) {
+        console.error(error);
+        res.status(500).send('Error verifying email.');
+    }
+});
+
+
 
 // 404 - Catch All for Undefined Routes
 app.get("*", (req, res) => res.status(404).sendFile(path.join(__dirname, "views", "404.html")));

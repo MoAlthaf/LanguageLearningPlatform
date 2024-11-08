@@ -48,8 +48,26 @@ async function getSessionKey(key){
     return await sessionData.findOne({sessionNumber:key})
 }
 
+// Function to update a user by username
+async function updateUser(username, updateData) {
+    await connectDB();
+    try {
+        const result = await userCollections.updateOne(
+            { username: username },
+            { $set: updateData }     
+        );
+        return result.modifiedCount > 0; 
+    } catch (error) {
+        return false;
+    }
+}
 
+async function getVerifiedToken(token){
+    await connectDB();
+    return await userCollections.findOne({verificationToken:token});
+
+}
 
 module.exports={
-    createUser,getUserByUsername,startSession,getSessionKey
+    createUser,getUserByUsername,startSession,getSessionKey,updateUser,getVerifiedToken
 }

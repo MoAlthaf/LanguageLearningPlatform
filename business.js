@@ -26,6 +26,14 @@ async function getSessionData(key){
     return await persistance.getSessionKey(key)
 }
 
-module.exports={
-    addUser,getUserData,startSession,getSessionData
+async function getTokenData(token){
+    return await persistance.getVerifiedToken(token)
 }
+
+async function updateUser(username,data){
+    return await persistance.updateUser(username,data)
+}
+
+module.exports={
+    addUser,getUserData,startSession,getSessionData,getTokenData,updateUser
+}   
