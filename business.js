@@ -10,6 +10,15 @@ async function getUserData(username){
     return await persistance.getUserByUsername(username)
 }
 
+async function getTokenData(token){
+    return await persistance.getVerifiedToken(token)
+}
+
+
+async function updateUser(username,updateData){
+    return await persistance.updateUser(username,updateData)
+}
+
 module.exports={
-    addUser,getUserData
+    addUser,getUserData,updateUser,getTokenData
 }

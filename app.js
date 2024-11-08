@@ -5,6 +5,12 @@ const bodyParser = require('body-parser');
 const multer = require('multer') //to handle images in form
 const handlebars = require('express-handlebars');
 const app = express();
+const crypto = require('crypto');
+
+
+
+
+
 
 // Set up Handlebars as the template engine
 app.set('views', __dirname + "/templates");
@@ -18,7 +24,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 
 // Configure multer for handling file uploads
 const storage = multer.diskStorage({
-    destination: './uploads/profiles', // Directory to save profile photos
+    destination: './uploads/', // Directory to save profile photos
     filename: (req, file, cb) => {
         const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
         const filename = file.fieldname + '-' + uniqueSuffix + path.extname(file.originalname);
@@ -35,6 +41,30 @@ const upload = multer({ storage: storage });
 app.get("/", (req, res) => {
     res.redirect("/login");
 });
+
+
+
+app.get('/verify-email', async (req, res) => {
+    try {
+        const { token } = req.query;
+
+        const user = await business.getTokenData(token)  
+        if (!user) {
+            return res.status(400).send('Invalid or expired token.');
+        }
+
+        // Verify the user by updating their status and clearing the token
+        user.verified = true;
+        user.verificationToken = null; // Clear the token after verification
+        await business.updateUser(user.username, user)
+
+        res.send('Email verified successfully!');
+    } catch (error) {
+        console.error(error);
+        res.status(500).send('Error verifying email.');
+    }
+});
+
 
 // Route for the login page
 app.get("/login", (req, res) => {
@@ -69,39 +99,41 @@ app.post("/register", upload.single('profilePhoto'), async (req, res) => {
         const profilePhoto = req.file ? req.file.path : null; // Get the file path of the uploaded profile photo
         const languagesFluent = req.body.languagesFluent ? req.body.languagesFluent.split(",") : [];
         const languagesLearning = req.body.languagesLearning ? req.body.languagesLearning.split(",") : [];
-        const verified=false;
-        const badges=null;
         const createdAt = new Date(Date.now());
-        const updatedAt=new Date(Date.now());
+        const updatedAt = new Date(Date.now());
 
+        // Generate a verification token
         
-    
-
+        const verificationToken = crypto.randomBytes(32).toString('hex');
         // Create user data object
         const userData = {
             username: username,
             email: email,
-            password: password, // will do hashing later
-            profilePhoto: profilePhoto, //  file path for the profile photo
+            password: password, // TODO: Hash the password before saving
+            profilePhoto: profilePhoto,
             languagesFluent: languagesFluent,
             languagesLearning: languagesLearning,
-            verified:verified,
-            badges:badges,
+            verified: false,
+            badges: [],
+            verificationToken: verificationToken, // Store the token
             createdAt: createdAt,
-            updatedAt:updatedAt
-
+            updatedAt: updatedAt
         };
 
-        
+        // Add user to the database
         await business.addUser(userData);
+        
+        // Log the verification link to the console (simulate sending an email)
+        const verificationLink = `http://localhost:8000/verify-email?token=${verificationToken}`;
+        console.log(`Verification link: ${verificationLink}`);
 
         // Respond to client
-        res.send("User registered successfully");
+        res.send("User registered successfully. Please check the console for the verification link.");
     } catch (error) {
+        console.error(error);
         res.status(500).send("Error registering user");
     }
 });
-
 
 app.get("/index",async (req,res)=>{
     let user=await business.getUserData("Jhoan")

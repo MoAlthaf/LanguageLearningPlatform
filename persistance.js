@@ -16,6 +16,8 @@ async function connectDB() {
     }
 }
 
+
+
 //Function to create a user,
 async function createUser(data){
     await connectDB()
@@ -28,6 +30,27 @@ async function createUser(data){
     
 }
 
+// Function to update a user by username
+async function updateUser(username, updateData) {
+    await connectDB();
+    try {
+        const result = await userCollections.updateOne(
+            { username: username },
+            { $set: updateData }     
+        );
+        return result.modifiedCount > 0; 
+    } catch (error) {
+        return false;
+    }
+}
+
+async function getVerifiedToken(token){
+    await connectDB();
+    return await userCollections.findOne({verificationToken:token});
+
+}
+
+
 async function getUserByUsername(username) {
     await connectDB()
     return await userCollections.findOne({ username:username });
@@ -36,5 +59,5 @@ async function getUserByUsername(username) {
 
 
 module.exports={
-    createUser,getUserByUsername
+    createUser,getUserByUsername,updateUser,getVerifiedToken
 }
