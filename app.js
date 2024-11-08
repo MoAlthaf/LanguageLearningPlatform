@@ -13,6 +13,7 @@ app.engine('handlebars', handlebars.engine());
 
 // Set up static file serving
 app.use('/static', express.static(path.join(__dirname, 'static')));
+app.use('/uploads', express.static(path.join(__dirname,'uploads')));
 app.use(bodyParser.urlencoded({ extended: true }));
 
 // Configure multer for handling file uploads
@@ -20,11 +21,15 @@ const storage = multer.diskStorage({
     destination: './uploads/profiles', // Directory to save profile photos
     filename: (req, file, cb) => {
         const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-        cb(null, file.fieldname + '-' + uniqueSuffix + path.extname(file.originalname));
+        const filename = file.fieldname + '-' + uniqueSuffix + path.extname(file.originalname);
+        
+        // Use path.posix to ensure forward slashes, then call callback
+        cb(null, path.posix.join('profiles', filename));
     }
 });
 
 const upload = multer({ storage: storage });
+
 
 // Redirect to login page as default route
 app.get("/", (req, res) => {
@@ -100,8 +105,28 @@ app.post("/register", upload.single('profilePhoto'), async (req, res) => {
 
 app.get("/index",async (req,res)=>{
     let user=await business.getUserData("Jhoan")
-    res.render("index",{layout:"public_layout",user})
+    const profilePhotoPath=`/${user.profilePhoto}`
+    res.render("index",{layout:"public_layout",user,profilePhotoPath})
 })
+
+
+app.get("/profile",async (req,res)=>{
+    let user=await business.getUserData("Jhoan")
+    const profilePhotoPath=`/${user.profilePhoto}`
+    res.render('profileview', {layout:"public_layout",user,profilePhotoPath});
+})
+
+
+
+
+
+
+
+
+
+
+
+
 
 // Wildcard route for undefined routes (404)
 app.get("*", (req, res) => {
