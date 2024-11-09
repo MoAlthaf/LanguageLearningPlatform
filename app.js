@@ -122,11 +122,29 @@ app.get("/index", async (req, res) => {
 
 // Profile Route
 app.get("/profile", async (req, res) => {
-    const user = await business.getUserData("Jhoan");
+    const sessionId = req.cookies.user;
+
+    if (!sessionId) {
+        return res.redirect("/login");
+    }
+
+    const sessionData = await business.getSessionData(sessionId);
+
+    if (!sessionData) {
+        return res.redirect("/login");
+    }
+
+    const username = sessionData.data.userName;
+    const user = await business.getUserData(username);
+    
+    if (!user) {
+        return res.status(404).send('User not found');
+    }
+
     res.render('profileview', {
         layout: "public_layout",
         user,
-        profilePhotoPath: `/${user.profilePhoto}`
+        profilePhotoPath: `/${user.profilePhoto}` 
     });
 });
 
