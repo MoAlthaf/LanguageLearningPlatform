@@ -6,6 +6,7 @@ let client_status = false;
 let db=undefined
 let userCollections=undefined
 let sessionData=undefined
+let screenTime=undefined
 
 // Function to connect to the database
 async function connectDB() {
@@ -15,19 +16,28 @@ async function connectDB() {
         db=client.db("Project")
         userCollections=db.collection("users")
         sessionData=db.collection("sessionData")
+        screenTime=db.collection("screenTime")
     }
 }
 
 //Function to create a user,
-async function createUser(data){
-    await connectDB()
-    try{
-        await userCollections.insertOne(data)
-        return true
-    }catch{
-        return false
+async function createUser(data) {
+    await connectDB();
+    try {
+        // Insert the user and retrieve the inserted document's ObjectId
+        await userCollections.insertOne(data);
+        // Create an empty screenTime entry with just the userId
+        let screenData = {
+            username: username,
+            week: 0,         
+            year: new Date().getFullYear(), 
+            timeSpent: 0   
+        };
+        
+        await screenTime.insertOne(screenData);
+    } catch (error) {
+        return false;
     }
-    
 }
 
 async function getUserByUsername(username) {
@@ -68,6 +78,7 @@ async function getVerifiedToken(token){
 
 }
 
+
 module.exports={
-    createUser,getUserByUsername,startSession,getSessionKey,updateUser,getVerifiedToken
+    createUser,getUserByUsername,startSession,getSessionKey,updateUser,getVerifiedToken,
 }

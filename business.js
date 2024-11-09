@@ -34,6 +34,8 @@ async function updateUser(username,data){
     return await persistance.updateUser(username,data)
 }
 
+
+
 module.exports={
-    addUser,getUserData,startSession,getSessionData,getTokenData,updateUser
+    addUser,getUserData,startSession,getSessionData,getTokenData,updateUser,
 }   

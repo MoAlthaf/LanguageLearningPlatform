@@ -52,12 +52,12 @@ app.route("/login")
         res.send("Incorrect Username and password");
     });
 
-    // Route for the register page
+// Route for the register page
 app.get("/register", (req, res) => {
     res.render("register", { layout: undefined });
 });
 
-// Handle the registration form submission with file upload
+
 app.post("/register", upload.single('profilePhoto'), async (req, res) => {
     try {
         // Extract fields from req.body
@@ -70,14 +70,15 @@ app.post("/register", upload.single('profilePhoto'), async (req, res) => {
         const createdAt = new Date(Date.now());
         const updatedAt = new Date(Date.now());
 
-        // Generate a verification token
+
+        //  verification token
         
         const verificationToken = crypto.randomBytes(32).toString('hex');
         // Create user data object
         const userData = {
             username: username,
             email: email,
-            password: password, // TODO: Hash the password before saving
+            password: password, // will do hashing later
             profilePhoto: profilePhoto,
             languagesFluent: languagesFluent,
             languagesLearning: languagesLearning,
@@ -98,7 +99,6 @@ app.post("/register", upload.single('profilePhoto'), async (req, res) => {
         // Respond to client
         res.send("User registered successfully. Please check the console for the verification link.");
     } catch (error) {
-        console.error(error);
         res.status(500).send("Error registering user");
     }
 });
@@ -117,7 +117,7 @@ app.get("/index", async (req, res) => {
         layout: "public_layout",
         user,
         profilePhotoPath: `/${user.profilePhoto}`
-    });
+    })
 });
 
 // Profile Route
@@ -141,20 +141,19 @@ app.get('/verify-email', async (req, res) => {
 
         // Verify the user by updating their status and clearing the token
         user.verified = true;
-        user.verificationToken = null; // Clear the token after verification
+        user.verificationToken = null
         await business.updateUser(user.username, user)
 
-        res.send('Email verified successfully!');
+        res.send(`Email verified successfully!, You can login now`);
     } catch (error) {
-        console.error(error);
         res.status(500).send('Error verifying email.');
     }
 });
 
 
 
-// 404 - Catch All for Undefined Routes
-app.get("*", (req, res) => res.status(404).sendFile(path.join(__dirname, "views", "404.html")));
+// Catch All for Undefined Routes
+app.get("*", (req, res) => res.status(404).render("404",{layout:undefined}));
 
 // Start Server
 app.listen(8000, () => console.log(`App running on port 8000`));
