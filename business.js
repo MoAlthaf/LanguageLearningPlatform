@@ -1,8 +1,31 @@
 const persistance=require("./persistance")
 const crypto=require("crypto")
 
+function hashPassword(password, salt) {
+    const hash = crypto.createHash("sha1");
+    hash.update(salt + password);
+    return hash.digest("hex");
+  }
+
+
+function verifyPassword(inputPassword, storedPassword) {
+    const [salt, originalHash] = storedPassword.split(":");
+    const hash = hashPassword(inputPassword, salt);
+    return hash === originalHash;
+  }
+
+async function verifyUser(username,password){
+let userDetails=await getUserData(username)
+if (userDetails){
+        return verifyPassword(password,userDetails.password)
+}else{
+    return false
+}
+
+}
 
 async function addUser(data){
+    data.password=hashPassword(data.password)
     await persistance.createUser(data)
 }
 
@@ -15,7 +38,7 @@ async function startSession(data){
     let sessionId=crypto.randomUUID()
     let sessionData={
         sessionNumber:sessionId,
-        sessionExpiry: new Date(Date.now() + 1000 * 60*10),
+        sessionExpiry: new Date(Date.now() + 1000 * 60*15),
         data:data
     }
     await persistance.startSession(sessionData)
@@ -37,5 +60,5 @@ async function updateUser(username,data){
 
 
 module.exports={
-    addUser,getUserData,startSession,getSessionData,getTokenData,updateUser,
+    addUser,getUserData,startSession,getSessionData,getTokenData,updateUser,verifyUser
 }   

@@ -1,0 +1,48 @@
+[
+    {
+      "username": "Jhoan",
+      "password": "jhoan123",
+      "email": "jhoan@gmail.com",
+      "userType": "user"
+    },
+    {
+      "username": "fazil",
+      "password": "fazil123",
+      "email": "fazil@gmail.com",
+      "userType": "user"
+    },
+    {
+      "username": "Liya",
+      "password": "liya123",
+      "email": "liya@gmail.com",
+      "userType": "user"
+    },
+    {
+      "username": "Farhan",
+      "password": "farhan123",
+      "email": "farhan@gmail.com",
+      "userType": "user"
+    },
+
+
+
+
+
+
+
+    
+    {
+      "username": "Althaf",
+      "password": "123@admin",
+      "email": "althaf@gmail.com",
+      "userType": "admin"
+    },
+
+    {
+      "username": "Nihal",
+      "password": "Nihal@123",
+      "email": "nihal@gmail.com",
+      "userType": "admin"
+    }
+  ]
+  

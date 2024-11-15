@@ -41,16 +41,17 @@ app.route("/login")
         res.render('login', { layout: undefined });
     })
     .post(async (req, res) => {
-        const { username, password } = req.body;
-        const userData = await business.getUserData(username);
+        const username =req.body.username.toLowerCase() 
+        const password  = req.body.password;
+        const isVerified = await business.getUserData(username);
 
-        if (userData && password === userData.password) {
+        if (isVerified) {
             const sessionData = await business.startSession({ userName: username });
             res.cookie("user", sessionData.sessionNumber, { expires: sessionData.sessionExpiry });
             return res.redirect("/index");
         }
         res.send("Incorrect Username and password");
-    });
+    })
 
 // Route for the register page
 app.get("/register", (req, res) => {
@@ -61,8 +62,8 @@ app.get("/register", (req, res) => {
 app.post("/register", upload.single('profilePhoto'), async (req, res) => {
     try {
         // Extract fields from req.body
-        const username = req.body.username;
-        const email = req.body.email;
+        const username = req.body.username.toLowerCase();
+        const email = req.body.email.toLowerCase();
         const password = req.body.password;
         const profilePhoto = req.file ? req.file.path : null; // Get the file path of the uploaded profile photo
         const languagesFluent = req.body.languagesFluent ? req.body.languagesFluent.split(",") : [];
@@ -78,7 +79,7 @@ app.post("/register", upload.single('profilePhoto'), async (req, res) => {
         const userData = {
             username: username,
             email: email,
-            password: password, // will do hashing later
+            password: password, 
             profilePhoto: profilePhoto,
             languagesFluent: languagesFluent,
             languagesLearning: languagesLearning,
@@ -86,7 +87,8 @@ app.post("/register", upload.single('profilePhoto'), async (req, res) => {
             badges: [],
             verificationToken: verificationToken, // Store the token
             createdAt: createdAt,
-            updatedAt: updatedAt
+            updatedAt: updatedAt,
+            userType:"user"
         };
 
         // Add user to the database
@@ -168,7 +170,10 @@ app.get('/verify-email', async (req, res) => {
     }
 });
 
-
+app.get("/logout",(req,res)=>{
+    res.clearCookie('user');
+    res.redirect("/login")
+})
 
 // Catch All for Undefined Routes
 app.get("*", (req, res) => res.status(404).render("404",{layout:undefined}));
