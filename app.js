@@ -170,6 +170,98 @@ app.get('/verify-email', async (req, res) => {
     }
 });
 
+
+
+app.get("/add-friends", async (req, res) => {
+    try {
+        // Verify user session
+        const sessionId = req.cookies.user;
+        if (!sessionId) {
+            return res.redirect("/login");
+        }
+
+        const sessionData = await business.getSessionData(sessionId);
+        if (!sessionData || !sessionData.data.userName) {
+            return res.redirect("/login");
+        }
+
+        const currentUsername = sessionData.data.userName;
+
+        // Fetch current user and their contact data
+        const currentUser = await business.getUserData(currentUsername);
+        const userContacts = await business.getContacts(currentUsername);
+
+        if (!currentUser || !userContacts) {
+            return res.status(400).send("Error fetching user or contact data.");
+        }
+
+        const blockedList = userContacts.blocked || [];
+        const languagesLearning = currentUser.languagesLearning || [];
+
+        // Find users fluent in languages the current user is learning, excluding blocked ones
+        const matchingUsers = await business.getUserByLanguage(languagesLearning, blockedList);
+
+        // Render the Add Friends page
+        res.render("friends", { layout: "public_layout", matchingUsers });
+    } catch (error) {
+        console.error("Error in Add Friends route:", error);
+        res.status(500).send("Error fetching friends.");
+    }
+});
+
+
+app.post("/add-to-contacts", async (req, res) => {
+    try {
+        const sessionId = req.cookies.user;
+        const { contactId } = req.body;
+
+        if (!sessionId) {
+            res.redirect("/login");
+            return;
+        }
+        const sessionData=await business.getSessionData(sessionId)
+        const currentUsername=sessionData.data.userName
+        // Add contact to user's contacts
+        const success = await business.addToContacts(currentUsername, contactId);
+
+        if (success) {
+            res.redirect("/add-friends");
+        } else {
+            res.status(500).send("Error adding contact.");
+        }
+    } catch (error) {
+        console.error("Error adding contact:", error);
+        res.status(500).send("Error adding contact.");
+    }
+});
+
+app.post("/block-user", async (req, res) => {
+    try {
+        const sessionId = req.cookies.user;
+        const { blockId } = req.body;
+
+        if (!sessionId) {
+            res.redirect("/login");
+            return;
+        }
+
+        const sessionData=await business.getSessionData(sessionId)
+        const currentUsername=sessionData.data.userName
+        // Add user to the blocked list
+        const success = await business.blockUser(currentUsername, blockId);
+
+        if (success) {
+            res.redirect("/add-friends");
+        } else {
+            res.status(500).send("Error blocking user.");
+        }
+    } catch (error) {
+        console.error("Error blocking user:", error);
+        res.status(500).send("Error blocking user.");
+    }
+});
+
+
 app.get("/logout",(req,res)=>{
     res.clearCookie('user');
     res.redirect("/login")

@@ -1,0 +1,42 @@
+<div class="container mt-4">
+  <div class="card text-center">
+    <div class="card-header">
+      <h2>Add Friends</h2>
+    </div>
+    <div class="card-body">
+      <div class="row">
+        {{#each matchingUsers}}
+        <div class="col-md-4">
+          <div class="card mb-4">
+            <img
+              src="/{{this.profilePhoto}}"
+              class="card-img-top rounded-circle"
+              alt="{{this.username}}"
+              style="width: 150px; height: 150px; object-fit: cover; margin: auto;"
+            />
+            <div class="card-body">
+              <h5 class="card-title">{{this.username}}</h5>
+              <p>
+                <span class="badge bg-success">Fluent In:</span>
+                {{#each this.languagesFluent}}
+                <span class="badge bg-primary me-1">{{this}}</span>
+                {{/each}}
+              </p>
+              <form action="/add-to-contacts" method="POST" class="d-inline">
+                <input type="hidden" name="contactId" value="{{this.username}}" />
+                <button class="btn btn-primary">Add to Contacts</button>
+              </form>
+              <form action="/block-user" method="POST" class="d-inline">
+                <input type="hidden" name="blockId" value="{{this.username}}" />
+                <button class="btn btn-danger">Block</button>
+              </form>
+            </div>
+          </div>
+        </div>
+        {{else}}
+        <p class="text-center">No matching users found.</p>
+        {{/each}}
+      </div>
+    </div>
+  </div>
+</div>

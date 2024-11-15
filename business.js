@@ -57,8 +57,23 @@ async function updateUser(username,data){
     return await persistance.updateUser(username,data)
 }
 
+async function getUserByLanguage(LearningLanguages,blockedList){
+    return await persistance.getUsersByLanguages(LearningLanguages,blockedList)
+}
 
+async function addToContacts(userId,contactId){
+    return await persistance.addToContacts(userId,contactId)
+}
+
+async function blockUser(userId, blockId){
+    return await persistance.blockUser(userId, blockId)
+}
+
+async function getContacts(userId){
+    return await persistance.getContacts(userId)
+}
 
 module.exports={
-    addUser,getUserData,startSession,getSessionData,getTokenData,updateUser,verifyUser
+    addUser,getUserData,startSession,getSessionData,getTokenData,updateUser,verifyUser,getUserByLanguage,
+    addToContacts,blockUser,getContacts
 }   
