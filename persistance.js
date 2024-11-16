@@ -160,7 +160,16 @@ async function getContacts(username){
         return false
     }
 }
+
+
+async function getUsersFromList(userList){
+    let userDetails=[]
+    for(c of userList){
+        userDetails.push(await getUserByUsername(c))
+    }
+    return userDetails
+}
 module.exports={
     createUser,getUserByUsername,startSession,getSessionKey,updateUser,getVerifiedToken,
-    getUsersByLanguages,addToContacts,blockUser,getContacts
+    getUsersByLanguages,addToContacts,blockUser,getContacts,getUsersFromList
 }

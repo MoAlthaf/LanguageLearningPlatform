@@ -261,6 +261,20 @@ app.post("/block-user", async (req, res) => {
     }
 });
 
+app.get("/contacts",async (req,res)=>{
+    const sessionId = req.cookies.user;
+    if (!sessionId) return res.redirect("/login");
+
+    const sessionData = await business.getSessionData(sessionId);
+    if (!sessionData) return res.redirect("/login");
+
+    const username = sessionData.data.userName;
+    const user = await business.getUserData(username);
+    let contact=await business.getContacts(username)
+    let contactsList=await business.getUsersFromList(contact.contacts)
+    let blockedList=await business.getUsersFromList(contact.blocked)
+    res.render("contacts",{layout:"public_layout",user,contactsList,blockedList})
+})
 
 app.get("/logout",(req,res)=>{
     res.clearCookie('user');

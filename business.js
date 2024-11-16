@@ -73,7 +73,11 @@ async function getContacts(userId){
     return await persistance.getContacts(userId)
 }
 
+async function getUsersFromList(userList){
+    return await persistance.getUsersFromList(userList)
+}
+
 module.exports={
     addUser,getUserData,startSession,getSessionData,getTokenData,updateUser,verifyUser,getUserByLanguage,
-    addToContacts,blockUser,getContacts
+    addToContacts,blockUser,getContacts,getUsersFromList
 }   
