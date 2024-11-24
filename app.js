@@ -8,7 +8,7 @@ const business = require('./business');
 const crypto=require("crypto")
 const app = express();
 
-// Set up Handlebars as the template engine
+
 app.set('views', path.join(__dirname, "templates"));
 app.engine('handlebars', handlebars.engine());
 app.set('view engine', 'handlebars');
@@ -29,9 +29,7 @@ const storage = multer.diskStorage({
 });
 const upload = multer({ storage });
 
-// Routes
 
-// Redirect root to login
 app.get("/", (req, res) => res.redirect("/login"));
 
 // Login Routes
@@ -63,7 +61,7 @@ app.route("/login")
     });
 
 
-// Route for the register page
+
 app.get("/register", (req, res) => {
     res.render("register", { layout: undefined });
 });
@@ -116,23 +114,6 @@ app.post("/register", upload.single('profilePhoto'), async (req, res) => {
 });
 
 
-// Index Route
-/* app.get("/index", async (req, res) => {
-    const sessionId = req.cookies.user;
-    if (!sessionId) return res.redirect("/login");
-
-    const sessionData = await business.getSessionData(sessionId);
-    if (!sessionData) return res.redirect("/login");
-
-    const username = sessionData.data.userName;
-    const user = await business.getUserData(username);
-    res.render("index", {
-        layout: "public_layout",
-        user,
-        profilePhotoPath: `/${user.profilePhoto}`
-    })
-}); */
-
 app.get("/index", async (req, res) => {
     const sessionId = req.cookies.user;
     if (!sessionId) return res.redirect("/login");
@@ -149,7 +130,7 @@ app.get("/index", async (req, res) => {
     const earnedBadges = user.badges || [];
     const badgeDetails = allBadges.map((badge) => ({
         ...badge,
-        earned: earnedBadges.includes(badge._id.toString()), // Convert ObjectId to string
+        earned: earnedBadges.includes(badge._id.toString()), 
     }));
     res.render("index", {
         layout: "public_layout",
@@ -201,7 +182,7 @@ app.get('/verify-email', async (req, res) => {
             return res.status(400).send('Invalid or expired token.');
         }
 
-        // Verify the user by updating their status and clearing the token
+      
         user.verified = true;
         user.verificationToken = null
         await business.updateUser(user.username, user)
@@ -263,9 +244,9 @@ app.post("/add-to-contacts", async (req, res) => {
         }
         const sessionData=await business.getSessionData(sessionId)
         const currentUsername=sessionData.data.userName
-        // Add contact to user's contacts
+        
         const success = await business.addToContacts(currentUsername, contactId);
-        //await business.assignBadges(currentUsername)
+        
         if (success) {
             res.redirect("/add-friends");
         } else {
@@ -505,7 +486,10 @@ app.get("/profile/:userId",async (req,res)=>{
         let user=await business.getUserData(sessionData.data.userName)
 
         let contactsDetails=await business.getUserData(contactId)
-
+        if (!user.contacts.includes(contactsDetails.username)) {
+            res.send("Unauthorized");
+            return;
+        }
         res.render("contacts-profile",{layout:"public_layout",user,contact:contactsDetails})
     }catch(error){
         res.status(404).send("Page not found")
