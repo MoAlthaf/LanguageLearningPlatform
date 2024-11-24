@@ -6,12 +6,6 @@
       "userType": "user"
     },
     {
-      "username": "fazil",
-      "password": "fazil123",
-      "email": "fazil@gmail.com",
-      "userType": "user"
-    },
-    {
       "username": "Liya",
       "password": "liya123",
       "email": "liya@gmail.com",
@@ -23,26 +17,20 @@
       "email": "farhan@gmail.com",
       "userType": "user"
     },
-
-
-
-
-
-
-
-    
     {
-      "username": "Althaf",
-      "password": "123@admin",
-      "email": "althaf@gmail.com",
-      "userType": "admin"
+      "username": "Ahmed",
+      "password": "ahmed123",
+      "email": "ahmed@gmail.com",
+      "userType": "user"
     },
-
     {
-      "username": "Nihal",
-      "password": "Nihal@123",
-      "email": "nihal@gmail.com",
-      "userType": "admin"
+      "username": "Laila",
+      "password": "laila",
+      "email": "laila@gmail.com",
+      "userType": "user"
     }
+
+
   ]
+  
   

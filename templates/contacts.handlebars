@@ -26,23 +26,31 @@
                                 {{#each contactsList}}
                                 <tr>
                                     <td>
-                                        <img src="/{{this.profilePhoto}}" alt="{{this.username}}" class="rounded-circle" style="width: 50px; height: 50px; object-fit: cover;">
+                                        <a href="/profile/{{this.username}}">
+                                            <img src="/{{this.profilePhoto}}" alt="{{this.username}}" class="rounded-circle" style="width: 50px; height: 50px; object-fit: cover;">
+                                        </a>
                                     </td>
                                     <td> 
                                         <div class="col-auto">
-                                        <label class="visually-hidden" for="autoSizingInputGroup">Username</label>
-                                        <div class="input-group">
-                                        <div class="input-group-text">@</div>
-                                        <input type="text" class="form-control" id="autoSizingInputGroup" placeholder="{{this.username}}" readonly>
-                                        </div></td>
+                                            <label class="visually-hidden" for="autoSizingInputGroup">Username</label>
+                                            <div class="input-group">
+                                                <div class="input-group-text">@</div>
+                                                <input type="text" class="form-control" id="autoSizingInputGroup" placeholder="{{this.username}}" readonly>
+                                            </div>
+                                        </div>
+                                    </td>
                                     <td>
                                         <form action="/message" method="POST" class="d-inline">
-                                            <input type="hidden" name="contactId" value="{{this.username}} ">
+                                            <input type="hidden" name="contactId" value="{{this.username}}">
                                             <button class="btn btn-success btn-sm">Message Now</button>
                                         </form>
                                         <form action="/block-user" method="POST" class="d-inline">
                                             <input type="hidden" name="blockId" value="{{this.username}}">
                                             <button class="btn btn-danger btn-sm">Block</button>
+                                        </form>
+                                        <form action="/remove-contact" method="POST" class="d-inline">
+                                            <input type="hidden" name="removeId" value="{{this.username}}">
+                                            <button class="btn btn-secondary btn-sm">Remove</button>
                                         </form>
                                     </td>
                                 </tr>
@@ -70,12 +78,15 @@
                                     <td>
                                         <img src="/{{this.profilePhoto}}" alt="{{this.username}}" class="rounded-circle" style="width: 50px; height: 50px; object-fit: cover;">
                                     </td>
-                                    <td><div class="col-auto">
-                                        <label class="visually-hidden" for="autoSizingInputGroup">Username</label>
-                                        <div class="input-group">
-                                        <div class="input-group-text">@</div>
-                                        <input type="text" class="form-control" id="autoSizingInputGroup" placeholder="{{this.username}}" readonly>
-                                        </div></td></td>
+                                    <td>
+                                        <div class="col-auto">
+                                            <label class="visually-hidden" for="autoSizingInputGroup">Username</label>
+                                            <div class="input-group">
+                                                <div class="input-group-text">@</div>
+                                                <input type="text" class="form-control" id="autoSizingInputGroup" placeholder="{{this.username}}" readonly>
+                                            </div>
+                                        </div>
+                                    </td>
                                     <td>
                                         <form action="/unblock-user" method="POST" class="d-inline">
                                             <input type="hidden" name="unblockId" value="{{this.username}}">

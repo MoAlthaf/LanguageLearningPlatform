@@ -1,0 +1,48 @@
+<div class="container mt-4">
+  <div class="card">
+    <div class="card-header text-center">
+      <h2>{{contact.username}}'s Profile</h2>
+    </div>
+    <div class="card-body">
+      <div class="row">
+        <!-- Profile Picture -->
+        <div class="col-md-4 text-center">
+          <img 
+            src="/{{contact.profilePhoto}}" 
+            alt="{{contact.username}}" 
+            class="rounded-circle mb-3" 
+            style="width: 150px; height: 150px; object-fit: cover;"
+          />
+          <h4>{{contact.username}}</h4>
+        </div>
+
+        <!-- Profile Details -->
+        <div class="col-md-8">
+          <ul class="list-group">
+            <li class="list-group-item">
+              <strong>Email:</strong> {{contact.email}}
+            </li>
+            <li class="list-group-item">
+              <strong>Fluent Languages:</strong>
+              {{#each user.languagesFluent}}
+                <span class="badge bg-primary me-1">{{this}}</span>
+              {{/each}}
+            </li>
+            <li class="list-group-item">
+              <strong>Learning Languages:</strong>
+              {{#each user.languagesLearning}}
+                <span class="badge bg-success me-1">{{this}}</span>
+              {{/each}}
+            </li>
+            <li class="list-group-item">
+              <strong>Member Since:</strong> {{contact.createdAt}}
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+    <div class="card-footer text-center">
+      <a href="/messages" class="btn btn-primary me-2">Send Message</a>
+    </div>
+  </div>
+</div>

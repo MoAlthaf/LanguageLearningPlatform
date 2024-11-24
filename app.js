@@ -41,17 +41,27 @@ app.route("/login")
         res.render('login', { layout: undefined });
     })
     .post(async (req, res) => {
-        const username =req.body.username.toLowerCase() 
-        const password  = req.body.password;
-        const isVerified = await business.getUserData(username);
+        const username = req.body.username.toLowerCase();
+        const password = req.body.password;
 
+        const userData = await business.getUserData(username);
+        if (!userData) {
+            return res.status(401).send(`Invalid credentials. <a href="/login">Try again</a>`);
+        }
+        if(!userData.verified){
+            console.log(`Verification link: http://localhost:8000/verify-email?token=${userData.verificationToken}`);
+            return res.status(401).send(`Email not verified, Please check your console to verify email and try again`);
+        }
+        const isVerified = await business.verifyUser(username, password);
         if (isVerified) {
             const sessionData = await business.startSession({ userName: username });
             res.cookie("user", sessionData.sessionNumber, { expires: sessionData.sessionExpiry });
             return res.redirect("/index");
         }
-        res.send("Incorrect Username and password");
-    })
+
+        res.status(401).send(`Invalid credentials. <a href="/login">Try again</a>`);
+    });
+
 
 // Route for the register page
 app.get("/register", (req, res) => {
@@ -61,52 +71,53 @@ app.get("/register", (req, res) => {
 
 app.post("/register", upload.single('profilePhoto'), async (req, res) => {
     try {
-        // Extract fields from req.body
         const username = req.body.username.toLowerCase();
         const email = req.body.email.toLowerCase();
         const password = req.body.password;
-        const profilePhoto = req.file ? req.file.path : null; // Get the file path of the uploaded profile photo
+        const confirmPassword=req.bpdy.confirmPassword
+        // Validate username/email uniqueness
+        const existingUser = await business.getUserData(username);
+        if (existingUser) {
+            return res.status(400).send("Username already exists.");
+        }
+        if(password!=confirmPassword){
+            return res.status(400).send("Password do not match");
+        }
+
+        const profilePhoto = req.file ? req.file.path : null;
         const languagesFluent = req.body.languagesFluent ? req.body.languagesFluent.split(",") : [];
         const languagesLearning = req.body.languagesLearning ? req.body.languagesLearning.split(",") : [];
-        const createdAt = new Date(Date.now());
-        const updatedAt = new Date(Date.now());
-
-
-        //  verification token
-        
+        const createdAt = new Date();
+        const updatedAt = new Date();
         const verificationToken = crypto.randomBytes(32).toString('hex');
-        // Create user data object
+
         const userData = {
-            username: username,
-            email: email,
-            password: password, 
-            profilePhoto: profilePhoto,
-            languagesFluent: languagesFluent,
-            languagesLearning: languagesLearning,
+            username,
+            email,
+            password,
+            profilePhoto,
+            languagesFluent,
+            languagesLearning,
             verified: false,
             badges: [],
-            verificationToken: verificationToken, // Store the token
-            createdAt: createdAt,
-            updatedAt: updatedAt,
-            userType:"user"
+            verificationToken,
+            createdAt,
+            updatedAt,
+            userType: "user",
         };
 
-        // Add user to the database
         await business.addUser(userData);
-        
-        // Log the verification link to the console (simulate sending an email)
-        const verificationLink = `http://localhost:8000/verify-email?token=${verificationToken}`;
-        console.log(`Verification link: ${verificationLink}`);
-
-        // Respond to client
-        res.send("User registered successfully. Please check the console for the verification link.");
+        console.log(`Verification link: http://localhost:8000/verify-email?token=${verificationToken}`);
+        res.send("User registered successfully. Check your email for the verification link.");
     } catch (error) {
-        res.status(500).send("Error registering user");
+        console.error("Error registering user:", error);
+        res.status(500).send("Error registering user.");
     }
 });
 
+
 // Index Route
-app.get("/index", async (req, res) => {
+/* app.get("/index", async (req, res) => {
     const sessionId = req.cookies.user;
     if (!sessionId) return res.redirect("/login");
 
@@ -120,7 +131,33 @@ app.get("/index", async (req, res) => {
         user,
         profilePhotoPath: `/${user.profilePhoto}`
     })
+}); */
+
+app.get("/index", async (req, res) => {
+    const sessionId = req.cookies.user;
+    if (!sessionId) return res.redirect("/login");
+
+    const sessionData = await business.getSessionData(sessionId);
+    if (!sessionData) return res.redirect("/login");
+
+    const username = sessionData.data.userName;
+    const user = await business.getUserData(username);
+    await business.assignBadges(username)
+
+    // Fetch all badges and mark earned ones
+    const allBadges = await business.getAllBadges();
+    const earnedBadges = user.badges || [];
+    const badgeDetails = allBadges.map((badge) => ({
+        ...badge,
+        earned: earnedBadges.includes(badge._id.toString()), // Convert ObjectId to string
+    }));
+    res.render("index", {
+        layout: "public_layout",
+        user,
+        badges: badgeDetails,
+    });
 });
+
 
 // Profile Route
 app.get("/profile", async (req, res) => {
@@ -142,11 +179,16 @@ app.get("/profile", async (req, res) => {
     if (!user) {
         return res.status(404).send('User not found');
     }
-
+    const allBadges = await business.getAllBadges();
+    const earnedBadges = user.badges || [];
+    const badges = allBadges.map((badge) => ({
+        ...badge,
+        earned: earnedBadges.includes(badge._id.toString()),
+    }));
     res.render('profileview', {
         layout: "public_layout",
         user,
-        profilePhotoPath: `/${user.profilePhoto}` 
+        profilePhotoPath: `/${user.profilePhoto}` ,badges
     });
 });
 
@@ -199,10 +241,10 @@ app.get("/add-friends", async (req, res) => {
         const languagesLearning = currentUser.languagesLearning || [];
 
         // Find users fluent in languages the current user is learning, excluding blocked ones
-        const matchingUsers = await business.getUserByLanguage(languagesLearning, blockedList);
+        const matchingUsers = await business.getUserByLanguage(currentUsername,languagesLearning, blockedList);
 
         // Render the Add Friends page
-        res.render("friends", { layout: "public_layout", matchingUsers });
+        res.render("friends", { layout: "public_layout", matchingUsers,user:currentUser });
     } catch (error) {
         console.error("Error in Add Friends route:", error);
         res.status(500).send("Error fetching friends.");
@@ -223,7 +265,7 @@ app.post("/add-to-contacts", async (req, res) => {
         const currentUsername=sessionData.data.userName
         // Add contact to user's contacts
         const success = await business.addToContacts(currentUsername, contactId);
-
+        //await business.assignBadges(currentUsername)
         if (success) {
             res.redirect("/add-friends");
         } else {
@@ -275,6 +317,225 @@ app.get("/contacts",async (req,res)=>{
     let blockedList=await business.getUsersFromList(contact.blocked)
     res.render("contacts",{layout:"public_layout",user,contactsList,blockedList})
 })
+
+app.use(bodyParser.json())
+
+
+app.get("/messages", async (req, res) => {
+    try {
+        const sessionId = req.cookies.user;
+        if (!sessionId) return res.redirect("/login");
+
+        const sessionData = await business.getSessionData(sessionId);
+        if (!sessionData) return res.redirect("/login");
+
+        const username = sessionData.data.userName;
+        const user = await business.getUserData(username);
+
+        // Get the user's contacts
+        const contact = await business.getContacts(username);
+        const contactsList = await business.getUsersFromList(contact.contacts);
+
+        res.render("messages", {
+            layout: "public_layout",
+            user,
+            contactsList,
+        });
+    } catch (error) {
+        console.error("Error displaying messages page:", error);
+        res.status(500).send("Error displaying messages page.");
+    }
+});
+
+
+app.get("/get-messages", async (req, res) => {
+    try {
+        const sessionId = req.cookies.user;
+        if (!sessionId) return res.status(401).send("Unauthorized");
+
+        const sessionData = await business.getSessionData(sessionId);
+        const sender = sessionData.data.userName;
+        const receiver = req.query.contact;
+
+        const messages = await business.getMessages(sender, receiver);
+        res.json(messages);
+    } catch (error) {
+        console.error("Error fetching messages:", error);
+        res.status(500).send("Error fetching messages.");
+    }
+});
+
+app.post("/send-message", async (req, res) => {
+    try {
+        const sessionId = req.cookies.user;
+        if (!sessionId) return res.status(401).send("Unauthorized");
+
+        const sessionData = await business.getSessionData(sessionId);
+        const sender = sessionData.data.userName;
+        const { receiver, message } = req.body;
+        await business.assignBadges(sender)
+
+        await business.sendMessage(sender, receiver, message);
+        res.status(200).send("Message sent successfully.");
+    } catch (error) {
+        console.error("Error sending message:", error);
+        res.status(500).send("Error sending message.");
+    }
+});
+
+
+
+app.post("/unblock-user",async (req,res)=>{
+    try{
+        const sessionId = req.cookies.user;
+        if (!sessionId) return res.status(401).send("Unauthorized");
+
+        const sessionData = await business.getSessionData(sessionId);
+        const username = sessionData.data.userName;
+
+        let idToUnblock=req.body.unblockId
+
+        result=await business.unblockUser(username,idToUnblock)
+        res.status(200).redirect("/contacts");
+    }
+    catch{
+        console.error("Error Unblocking the user:", error);
+        res.status(500).send("Error Unblocking the user");
+    }
+})
+
+app.post("/api/update-profile-picture", upload.single("profilePhoto"), async (req, res) => {
+    try {
+        const sessionId = req.cookies.user;
+        if (!sessionId) return res.status(401).redirect("/login");
+
+        const sessionData = await business.getSessionData(sessionId);
+        if (!sessionData) return res.status(401).redirect("/login");
+
+        const username = sessionData.data.userName;
+
+        // Handle profile picture
+        if (req.file) {
+            const profilePhotoPath = req.file.path;
+            const success = await business.updateUser(username,  { profilePhoto: profilePhotoPath } );
+
+            if (!success) return res.status(500).send("Failed to update profile picture");
+        }
+
+        res.redirect("/profile");
+    } catch (error) {
+        console.error("Error updating profile picture:", error);
+        res.status(500).send("Error updating profile picture");
+    }
+});
+
+
+
+// GET route for rendering the password reset page
+app.get("/reset-password", async (req, res) => {
+    try {
+        const sessionId = req.cookies.user;
+        if (!sessionId) return res.status(401).redirect("/login");
+
+        let sessionData=await business.getSessionData(sessionId)
+
+        if(!sessionData) return res.status(401).redirect("/login");
+
+        let user=await business.getUserData(sessionData.data.userName)
+
+        let token=await business.generateToken(sessionId)
+      
+        res.render("reset_password", {
+            layout: "public_layout",
+            token,user // Pass the token to the client
+        });
+    } catch (error) {
+        console.error("Error loading reset password page:", error);
+        res.status(500).send("Error loading reset password page.");
+    }
+});
+
+// POST route for handling the password reset form submission
+app.post("/reset-password", async (req, res) => {
+    try {
+        const { token, newPassword, confirmPassword } = req.body;
+        
+        // Validate input
+        if (!token || !newPassword || !confirmPassword) {
+            return res.status(400).send("Missing required fields.");
+        }
+
+        if (newPassword !== confirmPassword) {
+            return res.status(400).send("Passwords do not match.");
+        }
+        const sessionId = req.cookies.user;
+        const sessionData=await business.getSessionData(sessionId)
+        const userData=await business.getUserData(sessionData.data.userName)
+
+        if(token==sessionData.formToken){
+            const success = await business.updatePassword(userData.username,newPassword)
+            if (!success) {
+                return res.status(500).send("Error updating password.");
+            }
+            res.send(`Password updated successfully. You can now <a href="/logout">log in here</a> with your new password.`);
+
+        }else{
+            return res.status(400).send("Token mismatch, Please retry.");
+        }
+ 
+
+
+       
+    } catch (error) {
+        console.error("Error resetting password:", error);
+        res.status(500).send("Error resetting password.");
+    }
+});
+
+app.get("/profile/:userId",async (req,res)=>{
+    try{
+        const contactId=req.params.userId
+        const sessionId = req.cookies.user;
+        if (!sessionId) return res.status(401).redirect("/login");
+
+        let sessionData=await business.getSessionData(sessionId)
+
+        if(!sessionData) return res.status(401).redirect("/login");
+
+        let user=await business.getUserData(sessionData.data.userName)
+
+        let contactsDetails=await business.getUserData(contactId)
+
+        res.render("contacts-profile",{layout:"public_layout",user,contact:contactsDetails})
+    }catch(error){
+        res.status(404).send("Page not found")
+    }
+})
+
+app.post("/remove-contact", async (req, res) => {
+    try {
+        const sessionId = req.cookies.user;
+        if (!sessionId) return res.redirect("/login");
+
+        const sessionData = await business.getSessionData(sessionId);
+        if (!sessionData) return res.redirect("/login");
+
+        const username = sessionData.data.userName;
+        const contactToRemove = req.body.removeId;
+
+        const success = await business.removeContact(username, contactToRemove);
+        if (success) {
+            res.redirect("/contacts");
+        } else {
+            res.status(500).send("Error removing contact.");
+        }
+    } catch (error) {
+        console.error("Error removing contact:", error);
+        res.status(500).send("Error removing contact.");
+    }
+});
+
+
 
 app.get("/logout",(req,res)=>{
     res.clearCookie('user');

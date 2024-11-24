@@ -1,0 +1,116 @@
+<div class="container mt-4">
+  <div class="row">
+    <!-- Contacts List -->
+    <div class="col-md-4">
+      <div class="card">
+        <div class="card-header">
+          <h5>Contacts</h5>
+        </div>
+        <ul class="list-group list-group-flush">
+          {{#each contactsList}}
+          <li
+            class="list-group-item d-flex justify-content-between align-items-center contact-item"
+            data-contact="{{this.username}}"
+            onclick="openChat('{{this.username}}', '{{this.profilePhoto}}')"
+          >
+            <div>
+              <img
+                src="/{{this.profilePhoto}}"
+                class="rounded-circle me-2"
+                style="width: 40px; height: 40px; object-fit: cover;"
+                alt="{{this.username}}"
+              />
+              {{this.username}}
+            </div>
+          </li>
+          {{/each}}
+        </ul>
+      </div>
+    </div>
+
+    <!-- Chat Window -->
+    <div class="col-md-8">
+      <div class="card">
+        <div class="card-header">
+          <h5 id="chat-header">Select a contact to start chatting</h5>
+        </div>
+        <div class="card-body chat-window" id="chat-window">
+          <!-- Messages will be dynamically loaded here -->
+        </div>
+        <div class="card-footer">
+          <form id="message-form" class="d-flex" onsubmit="return sendMessage()">
+            <input
+              type="text"
+              id="message-input"
+              class="form-control me-2"
+              placeholder="Type a message"
+              disabled
+            />
+            <button class="btn btn-primary" id="send-button" disabled>Send</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  var chatWindow = document.getElementById("chat-window");
+  var messageInput = document.getElementById("message-input");
+  var sendButton = document.getElementById("send-button");
+  var chatHeader = document.getElementById("chat-header");
+  var currentContact = null;
+
+  function openChat(contact, profilePhoto) {
+    const formattedPath = profilePhoto.replace(/(uploads)(profiles)/, "uploads\\profiles\\");
+    currentContact = contact;
+    chatHeader.innerHTML = `
+      <img src="/${formattedPath}" class="rounded-circle me-2" style="width: 40px; height: 40px; object-fit: cover;">
+      Chat with ${contact}
+    `;
+    messageInput.disabled = false;
+    sendButton.disabled = false;
+
+    // Fetch chat messages
+    fetch(`/get-messages?contact=${contact}`)
+      .then((response) => response.json())
+      .then((messages) => {
+        chatWindow.innerHTML = "";
+        messages.forEach((msg) => {
+          const isSender = msg.sender === "{{user.username}}";
+          chatWindow.innerHTML += `
+            <div class="${isSender ? 'text-end' : 'text-start'}">
+              <div class="badge ${isSender ? 'bg-primary' : 'bg-secondary'} mb-2">
+                ${msg.message}
+              </div>
+            </div>`;
+        });
+
+        // Scroll to the bottom
+        chatWindow.scrollTop = chatWindow.scrollHeight;
+      });
+  }
+
+  function sendMessage() {
+    const message = messageInput.value;
+    if (!message.trim() || !currentContact) return false;
+
+    // Send message to the server
+    fetch("/send-message", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ receiver: currentContact, message }),
+    });
+
+    // Add the message to the chat window
+    chatWindow.innerHTML += `
+      <div class="text-end">
+        <div class="badge bg-primary mb-2">${message}</div>
+      </div>`;
+    chatWindow.scrollTop = chatWindow.scrollHeight;
+    messageInput.value = "";
+    return false; // Prevent form submission
+  }
+</script>
+
+

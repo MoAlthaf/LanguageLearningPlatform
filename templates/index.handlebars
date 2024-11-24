@@ -1,4 +1,4 @@
-<head>
+{{!-- <head>
   <base href="/static/">
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -33,108 +33,21 @@
   <link href="/static/css/examples.css" rel="stylesheet">
   <link href="/static/vendors/@coreui/chartjs/css/coreui-chartjs.css" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-</head>
+</head> --}}
 <div class="body flex-grow-1 px-3">
   <div class="container-lg">
     <div class="row">
-    <!-- First Messenger Badge -->
-    <div class="col-sm-6 col-lg-3">
-        <div class="card mb-4 text-white bg-primary text-center" style="height: 150px;">
-            <div class="card-body pb-2 d-flex flex-column justify-content-center">
-                <span class="badge bg-light text-dark fs-5 mb-3">First Messenger</span>
-                <p class="mb-0">Send your first message to unlock this badge!</p>
-            </div>
-        </div>
-    </div>
-
-    <!-- 100 Messages Badge -->
-    <div class="col-sm-6 col-lg-3">
-        <div class="card mb-4 text-white bg-info text-center" style="height: 150px;">
-            <div class="card-body pb-2 d-flex flex-column justify-content-center">
-                <span class="badge bg-light text-dark fs-5 mb-3">100 Messages Sent</span>
-                <p class="mb-0">Achieve 100 messages to earn this badge!</p>
-            </div>
-        </div>
-    </div>
-
-    <!-- Friend Maker Badge -->
-    <div class="col-sm-6 col-lg-3">
-        <div class="card mb-4 text-white bg-warning text-center" style="height: 150px;">
-            <div class="card-body pb-2 d-flex flex-column justify-content-center">
-                <span class="badge bg-light text-dark fs-5 mb-3">Friend Maker</span>
-                <p class="mb-0">Add 3 friends to unlock this badge!</p>
-            </div>
-        </div>
-    </div>
-
-    <!-- Language Enthusiast Badge -->
-    <div class="col-sm-6 col-lg-3">
-        <div class="card mb-4 text-white bg-danger text-center" style="height: 150px;">
-            <div class="card-body pb-2 d-flex flex-column justify-content-center">
-                <span class="badge bg-light text-dark fs-5 mb-3">Language Enthusiast</span>
-                <p class="mb-0">Be fluent in 3+ languages to earn this badge!</p>
-            </div>
-        </div>
-    </div>
-</div>
-
-    <!-- /.row-->
-    <div class="card mb-4">
-      <div class="card-body">
-        <div class="d-flex justify-content-between">
-          <div>
-            <h4 class="card-title mb-0">Here is your progression,{{user.username}}</h4>
-            <div class="small text-medium-emphasis">November 01 - November 07 ' 2024</div>
-          </div>
-          <div class="btn-toolbar d-none d-md-block" role="toolbar" aria-label="Toolbar with buttons">
-            <div class="btn-group btn-group-toggle mx-3" data-coreui-toggle="buttons">
-              <input class="btn-check" id="option1" type="radio" name="options" autocomplete="off">
-              <label class="btn btn-outline-secondary"> Day</label>
-              <input class="btn-check" id="option2" type="radio" name="options" autocomplete="off" checked="">
-              <label class="btn btn-outline-secondary active"> Month</label>
-              <input class="btn-check" id="option3" type="radio" name="options" autocomplete="off">
-              <label class="btn btn-outline-secondary"> Year</label>
-            </div>
-            <button class="btn btn-primary" type="button">
-              <svg class="icon">
-                <use xlink:href="/static/vendors/@coreui/icons/svg/free.svg#cil-cloud-download"></use>
-              </svg>
-            </button>
+      {{#each badges}}
+      <div class="col-sm-6 col-lg-3">
+        <div class="card mb-4 text-white text-center {{#if earned}}bg-primary{{else}}bg-secondary{{/if}}" style="height: 150px;">
+          <div class="card-body pb-2 d-flex flex-column justify-content-center">
+            <span class="badge bg-light text-dark fs-5 mb-3">{{this.name}}</span>
+            <p class="mb-0">{{this.description}}</p>
           </div>
         </div>
-        <div>
-          <canvas id="myChart"></canvas>
-        </div>
-
-        
       </div>
+      {{/each}}
     </div>
+    
   </div>
-
-
-
-<script>
-  const ctx = document.getElementById('myChart');
-
-  new Chart(ctx, {
-    type: 'bar',
-    data: {
-      labels: ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday','Saturday'],
-      datasets: [{
-        label: '# Hours spent ',
-        data: [3, 2, 3, 5, 2, 3, 4], //random data
-        borderWidth: 1
-      }]
-    },
-    options: {
-      scales: {
-        y: {
-          beginAtZero: true
-        }
-      }
-    }
-  });
-
- 
-
-</script>
+</div>
