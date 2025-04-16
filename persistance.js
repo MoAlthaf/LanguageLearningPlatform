@@ -1,7 +1,7 @@
 const mongodb=require("mongodb")
 
 
-let client = new mongodb.MongoClient("mongodb+srv://60300344:60300344@web2practice.kgejg.mongodb.net/");
+let client = new mongodb.MongoClient("");
 let client_status = false;
 let db=undefined
 let userCollections=undefined
